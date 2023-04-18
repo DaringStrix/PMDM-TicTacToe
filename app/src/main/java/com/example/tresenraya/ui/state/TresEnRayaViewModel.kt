@@ -14,9 +14,9 @@ class TresEnRayaViewModel : ViewModel() {
     private val _board = getBoard().toMutableStateList()
     val board: SnapshotStateList<Cell>
         get() = _board
+    val primary = mutableStateOf(Color.White)
 
     var currentPlayer = mutableStateOf(Player.X)
-//    var winner = mutableStateOf(Player.NONE)
 
     val stage = mutableStateOf(
         Stage.PLAYING
@@ -29,8 +29,8 @@ class TresEnRayaViewModel : ViewModel() {
 
 
     fun flipCurrentPlayer() {
-        if (currentPlayer.value == Player.X) currentPlayer.value =
-            Player.O else currentPlayer.value = Player.X
+        if (currentPlayer.value == Player.X && stage.value == Stage.PLAYING) currentPlayer.value =
+            Player.O else if (stage.value == Stage.PLAYING) currentPlayer.value = Player.X
     }
 
     fun startGame() {
@@ -42,6 +42,8 @@ class TresEnRayaViewModel : ViewModel() {
         isGameStarted.value = false
         stage.value = Stage.PLAYING
         softReset(color)
+        player1Wins.value = 0
+        player2Wins.value = 0
     }
 
     fun softReset(color: Color) {
@@ -123,9 +125,6 @@ class TresEnRayaViewModel : ViewModel() {
             board.find { it.cellCol == 3 && it.cellRow == 1 }?.let { it.color.value = Color.Red }
         } else if (board.all { it.player.value != Player.NONE }) {
             stage.value = Stage.DRAW
-        }else{
-            flipCurrentPlayer()
         }
-
     }
 }

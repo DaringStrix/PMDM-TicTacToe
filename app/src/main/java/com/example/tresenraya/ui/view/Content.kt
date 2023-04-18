@@ -1,5 +1,8 @@
-package com.example.tresenraya
+package com.example.tresenraya.ui.view
 
+import android.content.Context
+import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -13,7 +16,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -21,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import com.example.tresenraya.data.Player
 import com.example.tresenraya.ui.state.Cell
 import com.example.tresenraya.ui.state.Stage
-import com.example.tresenraya.ui.view.CellView
 
 @Composable
 fun Content(
@@ -33,13 +34,14 @@ fun Content(
     startGame: () -> Unit,
     didSomeoneWon: (Cell) -> Unit,
     stage: MutableState<Stage>,
-    softReset: () -> Unit
+    softReset: () -> Unit,
+    orientation: Int,
+    context: Context
 ) {
-
     Column(
         Modifier
-            .padding(paddingValues)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(paddingValues),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     )
@@ -52,47 +54,93 @@ fun Content(
         }
 
         if (isGameStarted) {
-            Text(
-                text = gameStage,
-                Modifier.padding(bottom = 50.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp
-            )
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(100.dp),
-                Modifier.padding(horizontal = 50.dp),
-                userScrollEnabled = false,
-                content = {
-                    items(items = newcell) { element ->
-                        CellView(
-                            element,
-                            nextPlayer = { changePlayer() },
-                            currentPlayer = currentPlayer,
-                            didSomeoneWon = didSomeoneWon,
-                            softReset= { softReset() },
-                            stage = stage
-                        )
-                    }
-                }
-            )
-        } else {
-            Button(onClick = startGame) {
-                Card(
-                    backgroundColor = MaterialTheme.colors.primary,
-                    modifier = Modifier
-                        .size(150.dp)
-                        .padding(4.dp)
-                        .fillMaxWidth(),
-                    elevation = 8.dp
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Text(
-                        text = "Start Game", fontWeight = FontWeight.Bold,
-                        fontSize = 30.sp,
-                        color = Color(0xFFFFFFFF),
+                        text = gameStage,
+                        Modifier.weight(0.5F),
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
+                        fontSize = 20.sp
+                    )
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        Modifier
+                            .padding(horizontal = 50.dp)
+                            .width(240.dp)
+                            .weight(0.5F),
+                        userScrollEnabled = false,
+                        content = {
+                            items(items = newcell) { element ->
+                                CellView(
+                                    element,
+                                    nextPlayer = { changePlayer() },
+                                    cellheight = 75.dp,
+                                    currentPlayer = currentPlayer,
+                                    didSomeoneWon = didSomeoneWon,
+                                    softReset = { softReset() },
+                                    stage = stage,
+                                    context = context
+                                )
+                            }
+                        }
                     )
                 }
+            } else {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = gameStage,
+                        Modifier.padding(bottom = 50.dp),
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+                    )
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        Modifier
+                            .padding(horizontal = 50.dp)
+                            .width(300.dp),
+                        userScrollEnabled = false,
+                        content = {
+                            items(items = newcell) { element ->
+                                CellView(
+                                    element,
+                                    nextPlayer = { changePlayer() },
+                                    cellheight = 100.dp,
+                                    currentPlayer = currentPlayer,
+                                    didSomeoneWon = didSomeoneWon,
+                                    softReset = { softReset() },
+                                    stage = stage,
+                                    context = context
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+
+        } else {
+            Card(
+                backgroundColor = MaterialTheme.colors.primary,
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(4.dp)
+                    .fillMaxWidth()
+                    .clickable { startGame() },
+                elevation = 8.dp
+            ) {
+                Text(
+                    text = "Start Game", fontWeight = FontWeight.Bold,
+                    fontSize = 30.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
         }
     }

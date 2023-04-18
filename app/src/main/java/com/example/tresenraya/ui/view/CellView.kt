@@ -1,5 +1,7 @@
 package com.example.tresenraya.ui.view
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -9,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tresenraya.data.Player
@@ -22,7 +25,9 @@ fun CellView(
     currentPlayer: Player,
     didSomeoneWon: (Cell) -> Unit,
     softReset: () -> Unit,
-    stage: MutableState<Stage>
+    stage: MutableState<Stage>,
+    cellheight: Dp,
+    context: Context
 ) {
 
     if (stage.value==Stage.PLAYING) {
@@ -33,9 +38,12 @@ fun CellView(
                     if (element.player.value == Player.NONE) {
                         element.player.value = currentPlayer
                         didSomeoneWon(element)
+                        nextPlayer()
+                    }else{
+                        Toast.makeText(context, "Casilla llena", Toast.LENGTH_SHORT).show()
                     }
                 }
-                .size(100.dp)
+                .size(cellheight)
                 .padding(4.dp)
                 .fillMaxWidth(),
             elevation = 8.dp
@@ -53,8 +61,8 @@ fun CellView(
         Card(
             backgroundColor = element.color.value,
             modifier = Modifier
-                .clickable { softReset(); nextPlayer}
-                .size(100.dp)
+                .clickable { softReset(); nextPlayer()  }
+                .size(cellheight)
                 .padding(4.dp)
                 .fillMaxWidth(),
             elevation = 8.dp
