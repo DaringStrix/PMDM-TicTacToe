@@ -10,17 +10,15 @@ import com.example.tresenraya.data.Player
 enum class Stage { PLAYING, DRAW, WON }
 
 class TresEnRayaViewModel : ViewModel() {
-
     private val _board = getBoard().toMutableStateList()
     val board: SnapshotStateList<Cell>
         get() = _board
-    val primary = mutableStateOf(Color.White)
+    val primaryColor = mutableStateOf(Color.White)
+
 
     var currentPlayer = mutableStateOf(Player.X)
 
-    val stage = mutableStateOf(
-        Stage.PLAYING
-    )
+    val stage = mutableStateOf(Stage.PLAYING)
 
     var isGameStarted = mutableStateOf(false)
 
@@ -48,7 +46,7 @@ class TresEnRayaViewModel : ViewModel() {
 
     fun softReset(color: Color) {
         counter()
-        board.forEach {
+       _board.forEach {
             it.player.value = Player.NONE
             it.color.value = color
         }
@@ -66,64 +64,51 @@ class TresEnRayaViewModel : ViewModel() {
         }
     }
 
+    private fun checkRowsOrCols(checkRows: Boolean, cell: Cell): Boolean {
+        val allCellsTrue = ArrayList<Boolean>()
+        for (x in 1..3) {
+            if (checkRows) allCellsTrue.add(board.find { it.cellRow == cell.cellRow && it.cellCol == x }
+                ?.let { it.player.value == currentPlayer.value } == true)
+            else allCellsTrue.add(board.find { it.cellCol == cell.cellCol && it.cellRow == x }
+                ?.let { it.player.value == currentPlayer.value } == true)
+        }
+        return allCellsTrue == listOf(true, true, true)
+    }
+
+    private fun checkDiagonals(inverted: Boolean): Boolean {
+        val allCellsTrue = ArrayList<Boolean>()
+        for (x in 0..2) {
+            val inversor = 3
+            if (!inverted) {
+                allCellsTrue.add(board.find { it.cellCol == x+1 && it.cellRow == x+1 }
+                    ?.let { it.player.value == currentPlayer.value } == true)
+            }else {
+                allCellsTrue.add(board.find { it.cellCol == inversor-x && it.cellRow == x+1 }
+                    ?.let { it.player.value == currentPlayer.value } == true)
+            }
+        }
+        return allCellsTrue == listOf(true, true, true)
+    }
+
     fun whichPlayerWins(cell: Cell) {
-        if (board.find { it.cellRow == cell.cellRow && it.cellCol == 1 }
-                ?.let { it.player.value == currentPlayer.value } == true      // 3-in-the-row-1
-            && board.find { it.cellRow == cell.cellRow && it.cellCol == 2 }
-                ?.let { it.player.value == currentPlayer.value } == true
-            && board.find { it.cellRow == cell.cellRow && it.cellCol == 3 }
-                ?.let { it.player.value == currentPlayer.value } == true
-        ) {
+        if (checkRowsOrCols(true, cell)) {       // 3-in-the-row-1
             stage.value = Stage.WON
-            board.find { it.cellRow == cell.cellRow && it.cellCol == 1 }
-                ?.let { it.color.value = Color.Red }
-            board.find { it.cellRow == cell.cellRow && it.cellCol == 2 }
-                ?.let { it.color.value = Color.Red }
-            board.find { it.cellRow == cell.cellRow && it.cellCol == 3 }
-                ?.let { it.color.value = Color.Red }
-
-        } else if (board.find { it.cellCol == cell.cellCol && it.cellRow == 1 }
-                ?.let { it.player.value == currentPlayer.value } == true      // 3-in-the-column-1
-            && board.find { it.cellCol == cell.cellCol && it.cellRow == 2 }
-                ?.let { it.player.value == currentPlayer.value } == true
-            && board.find { it.cellCol == cell.cellCol && it.cellRow == 3 }
-                ?.let { it.player.value == currentPlayer.value } == true
-        ) {
+           _board.forEach { if (it.cellRow == cell.cellRow) it.color.value = Color.Red }
+        }
+        if (checkRowsOrCols(false, cell)) {      // 3-in-the-column-1
             stage.value = Stage.WON
-            board.find { it.cellCol == cell.cellCol && it.cellRow == 1 }
-                ?.let { it.color.value = Color.Red }
-            board.find { it.cellCol == cell.cellCol && it.cellRow == 2 }
-                ?.let { it.color.value = Color.Red }
-            board.find { it.cellCol == cell.cellCol && it.cellRow == 3 }
-                ?.let { it.color.value = Color.Red }
-
-        } else if (
-            board.find { it.cellCol == 1 && it.cellRow == 1 }
-                ?.let { it.player.value == currentPlayer.value } == true     // 3-in-the-diagonal
-            && board.find { it.cellCol == 2 && it.cellRow == 2 }
-                ?.let { it.player.value == currentPlayer.value } == true
-            && board.find { it.cellCol == 3 && it.cellRow == 3 }
-                ?.let { it.player.value == currentPlayer.value } == true
-        ) {
+           _board.forEach { if (it.cellCol == cell.cellCol) it.color.value = Color.Red }
+        }
+        if (checkDiagonals(false)) {       // 3-in-the-diagonal
             stage.value = Stage.WON
-            board.find { it.cellCol == 1 && it.cellRow == 1 }?.let { it.color.value = Color.Red }
-            board.find { it.cellCol == 2 && it.cellRow == 2 }?.let { it.color.value = Color.Red }
-            board.find { it.cellCol == 3 && it.cellRow == 3 }?.let { it.color.value = Color.Red }
-
-        } else if (
-            board.find { it.cellRow + it.cellCol == 4 }.let { true }
-            && board.find { it.cellCol == 1 && it.cellRow == 3 }
-                ?.let { it.player.value == currentPlayer.value } == true       // 3-in-the-opposite-diagonal
-            && board.find { it.cellCol == 2 && it.cellRow == 2 }
-                ?.let { it.player.value == currentPlayer.value } == true
-            && board.find { it.cellCol == 3 && it.cellRow == 1 }
-                ?.let { it.player.value == currentPlayer.value } == true
-        ) {
+           _board.forEach { if (it.cellRow == it.cellCol) it.color.value = Color.Red }
+        }
+        if (checkDiagonals(true)) {        // 3-in-the-inverted-diagonal
             stage.value = Stage.WON
-            board.find { it.cellCol == 1 && it.cellRow == 3 }?.let { it.color.value = Color.Red }
-            board.find { it.cellCol == 2 && it.cellRow == 2 }?.let { it.color.value = Color.Red }
-            board.find { it.cellCol == 3 && it.cellRow == 1 }?.let { it.color.value = Color.Red }
-        } else if (board.all { it.player.value != Player.NONE }) {
+            val inversor=3
+           _board.forEach {if (it.cellCol == inversor-(it.cellRow-1)) it.color.value = Color.Red }
+        }
+        if (stage.value == Stage.PLAYING &&_board.all { it.player.value != Player.NONE }) {
             stage.value = Stage.DRAW
         }
     }
