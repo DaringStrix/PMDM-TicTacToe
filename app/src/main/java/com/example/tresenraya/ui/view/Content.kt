@@ -7,12 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,9 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.tresenraya.data.Cell
 import com.example.tresenraya.data.Player
-import com.example.tresenraya.ui.state.Cell
-import com.example.tresenraya.ui.state.Stage
+import com.example.tresenraya.data.Stage
 
 @Composable
 fun Content(
@@ -33,7 +31,7 @@ fun Content(
     isGameStarted: Boolean,
     startGame: () -> Unit,
     didSomeoneWon: (Cell) -> Unit,
-    stage: MutableState<Stage>,
+    stage: Stage,
     softReset: () -> Unit,
     orientation: Int,
     context: Context
@@ -47,7 +45,7 @@ fun Content(
     )
     {
 
-        val gameStage = when (stage.value) {
+        val gameStage = when (stage) {
             Stage.PLAYING -> "Next turn \n $currentPlayer \n"
             Stage.WON -> "$currentPlayer \n WINS \n Press any cell for another round"
             Stage.DRAW -> "No one \n WINS \n Press any cell for another round"
