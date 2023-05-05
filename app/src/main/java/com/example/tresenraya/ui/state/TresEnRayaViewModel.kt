@@ -21,13 +21,13 @@ class TresEnRayaViewModel(val defaultCellColor: Color) : ViewModel() {
 
     var isGameStarted by mutableStateOf(false)
 
-    var player1Wins by mutableStateOf(0)
-    var player2Wins by mutableStateOf(0)
+    var playerXWins by mutableStateOf(0)
+    var playerOWins by mutableStateOf(0)
 
 
     fun flipCurrentPlayer() {
-        if (currentPlayer == Player.X && stage == Stage.PLAYING) currentPlayer =
-            Player.O else if (stage == Stage.PLAYING) currentPlayer = Player.X
+        if (stage != Stage.PLAYING) return
+        currentPlayer = if (currentPlayer == Player.X) Player.O else Player.X
     }
 
     fun startGame() {
@@ -39,8 +39,8 @@ class TresEnRayaViewModel(val defaultCellColor: Color) : ViewModel() {
         isGameStarted = false
         stage = Stage.PLAYING
         softReset(color)
-        player1Wins = 0
-        player2Wins = 0
+        playerXWins = 0
+        playerOWins = 0
     }
 
     fun softReset(color: Color) {
@@ -54,59 +54,34 @@ class TresEnRayaViewModel(val defaultCellColor: Color) : ViewModel() {
     }
 
     private fun counter() {
-        if (stage == Stage.WON) {
-            if (currentPlayer.toString() == "X") {
-                player1Wins++
-            } else if (currentPlayer.toString() == "O") {
-                player2Wins++
-            }
-        }
+        if (stage != Stage.WON) return
+        if (currentPlayer == Player.X) playerXWins++ else playerOWins++
     }
 
-    private fun checkRowsOrCols(check: Check, cell: Cell): Boolean {
+    private fun checkWinningMove(check: Check, checkCell: Cell): Boolean {
         val allCellsTrue = ArrayList<Boolean>()
-        if (check == Check.ROW || check == Check.COL) {
-            for (x in 1..3) {
-                if (check == Check.ROW) allCellsTrue.add(board.find { it.cellRow == cell.cellRow && it.cellCol == x }
+        for (cell in 1..3) {
+            when (check) {
+                Check.ROW -> allCellsTrue.add(board.find { it.cellRow == checkCell.cellRow && it.cellCol == cell }
                     ?.let { it.player == currentPlayer } == true)
-                else allCellsTrue.add(board.find { it.cellCol == cell.cellCol && it.cellRow == x }
+                Check.COL -> allCellsTrue.add(board.find { it.cellCol == checkCell.cellCol && it.cellRow == cell }
                     ?.let { it.player == currentPlayer } == true)
-            }
-        } else {
-            for (x in 0..2) {
-                val inversor = 3
-                if (check==Check.DIAGONAL) {
-                    allCellsTrue.add(board.find { it.cellCol == x + 1 && it.cellRow == x + 1 }
+                Check.DIAGONAL -> allCellsTrue.add(board.find { it.cellCol == cell && it.cellRow == cell }
                         ?.let { it.player == currentPlayer } == true)
-                } else {
-                    allCellsTrue.add(board.find { it.cellCol == inversor - x && it.cellRow == x + 1 }
+                Check.INV_DIAGONAL -> allCellsTrue.add(board.find { it.cellCol == 4 - cell && it.cellRow == cell }
                         ?.let { it.player == currentPlayer } == true)
-                }
             }
         }
+
+        if (allCellsTrue == listOf(true, true, true)) stage = Stage.WON else if (stage == Stage.PLAYING && _board.all { it.player != Player.NONE }) stage = Stage.DRAW
+
         return allCellsTrue == listOf(true, true, true)
     }
 
-    fun whichPlayerWins(cell: Cell) {
-        if (checkRowsOrCols(Check.ROW, cell)) {       // 3-in-the-row-1
-            stage = Stage.WON
-            _board.forEach { if (it.cellRow == cell.cellRow) it.color = Color.Red }
-        }
-        if (checkRowsOrCols(Check.COL, cell)) {      // 3-in-the-column-1
-            stage = Stage.WON
-            _board.forEach { if (it.cellCol == cell.cellCol) it.color = Color.Red }
-        }
-        if (checkRowsOrCols(Check.DIAGONAL, cell)) {       // 3-in-the-diagonal
-            stage = Stage.WON
-            _board.forEach { if (it.cellRow == it.cellCol) it.color = Color.Red }
-        }
-        if (checkRowsOrCols(Check.INV_DIAGONAL, cell)) {        // 3-in-the-inverted-diagonal
-            stage = Stage.WON
-            val inversor = 3
-            _board.forEach { if (it.cellCol == inversor - (it.cellRow - 1)) it.color = Color.Red }
-        }
-        if (stage == Stage.PLAYING && _board.all { it.player != Player.NONE }) {
-            stage = Stage.DRAW
-        }
+    fun paintWinningMove(cell: Cell) {
+        _board.forEach { if (checkWinningMove(Check.ROW, cell) && it.cellRow == cell.cellRow) it.color = Color.Red}                     // 3-in-the-row-1
+        _board.forEach { if (checkWinningMove(Check.COL, cell) && it.cellCol == cell.cellCol) it.color = Color.Red}                     // 3-in-the-column-1
+        _board.forEach { if (checkWinningMove(Check.DIAGONAL,cell) && it.cellRow == it.cellCol) it.color = Color.Red}                   // 3-in-the-diagonal
+        _board.forEach { if (checkWinningMove(Check.INV_DIAGONAL, cell) && it.cellCol == 3 - (it.cellRow - 1)) it.color = Color.Red}    // 3-in-the-inverted-diagonal
     }
 }

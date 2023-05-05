@@ -3,9 +3,7 @@ package com.example.tresenraya.data;
 enum class Player(private val displayName: String) {
     X("X") ,
     O("O") ,
-    DRAW("no one"),
     NONE("");
-
     override fun toString() = displayName
 }
 

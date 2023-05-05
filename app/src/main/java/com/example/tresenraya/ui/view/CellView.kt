@@ -2,10 +2,12 @@ package com.example.tresenraya.ui.view
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -28,51 +30,34 @@ fun CellView(
     cellheight: Dp,
     context: Context
 ) {
-
-    if (stage==Stage.PLAYING) {
-        Card(
-            backgroundColor = element.color,
-            modifier = Modifier
-                .clickable {
+    Card(
+        backgroundColor = element.color,
+        modifier = Modifier
+            .clickable {
+                if (stage == Stage.PLAYING) {
                     if (element.player == Player.NONE) {
                         element.player = currentPlayer
                         didSomeoneWon(element)
                         nextPlayer()
-                    }else{
+                    } else {
                         Toast.makeText(context, "Casilla llena", Toast.LENGTH_SHORT).show()
                     }
+                } else {
+                    softReset(); nextPlayer()
                 }
-                .size(cellheight)
-                .padding(4.dp)
-                .fillMaxWidth(),
-            elevation = 8.dp
-        ) {
+            }
+            .size(cellheight)
+            .padding(4.dp)
+            .fillMaxWidth(),
+        elevation = 8.dp
+    ) {
+        Box(contentAlignment = Alignment.Center) {
             Text(
                 text = element.player.toString(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 30.sp,
                 color = Color(0xFFFFFFFF),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-    }else{
-        Card(
-            backgroundColor = element.color,
-            modifier = Modifier
-                .clickable { softReset(); nextPlayer()  }
-                .size(cellheight)
-                .padding(4.dp)
-                .fillMaxWidth(),
-            elevation = 8.dp
-        ) {
-            Text(
-                text = element.player.toString(),
-                fontWeight = FontWeight.Bold,
-                fontSize = 30.sp,
-                color = Color(0xFFFFFFFF),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(16.dp)
             )
         }
     }
