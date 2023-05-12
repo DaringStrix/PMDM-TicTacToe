@@ -7,6 +7,6 @@ enum class Player(private val displayName: String) {
     override fun toString() = displayName
 }
 
-enum class Stage { PLAYING, DRAW, WON }
+enum class Stage {STOPPED, PLAYING, DRAW, WON}
 enum class Check { ROW, COL, DIAGONAL, INV_DIAGONAL }
 

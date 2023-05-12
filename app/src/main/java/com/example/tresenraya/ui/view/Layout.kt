@@ -1,7 +1,9 @@
 package com.example.tresenraya.ui.view
 
-import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
@@ -11,28 +13,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tresenraya.data.Cell
-import com.example.tresenraya.data.Player
 import com.example.tresenraya.data.Stage
 
 @Composable
 fun Layout(
     paddingValues: PaddingValues,
-    newcell: SnapshotStateList<Cell>,
-    changePlayer: () -> Unit,
-    currentPlayer: Player,
-    isGameStarted: Boolean,
-    startGame: () -> Unit,
-    didSomeoneWon: (Cell) -> Unit,
+    board: SnapshotStateList<Cell>,
+    onClick: (Cell) -> Unit,
     stage: Stage,
-    softReset: () -> Unit,
     orientation: Int,
-    context: Context,
-
+    startGame: () -> Unit,
+    gameStage: String
 ) {
     Column(
         Modifier
@@ -42,75 +41,58 @@ fun Layout(
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
-
-        val gameStage = when (stage) {
-            Stage.PLAYING -> "Next turn \n $currentPlayer \n"
-            Stage.WON -> "$currentPlayer \n WINS \n Press any cell for another round"
-            Stage.DRAW -> "No one \n WINS \n Press any cell for another round"
-        }
-
-        if (isGameStarted) {
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                Row(
-                    Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Content(
-                        gameStage = gameStage,
-                        textModifier = Modifier
-                            .weight(0.55F),
-                        gridModifier = Modifier
-                            .weight(0.45F),
-                        newcell = newcell,
-                        changePlayer= changePlayer,
-                        currentPlayer = currentPlayer,
-                        didSomeoneWon = didSomeoneWon,
-                        stage = stage,
-                        softReset = softReset,
-                        context = context,
-                        cellheight = 100.dp
-                    )
-                }
-            } else {
-                Column(
-                    Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Content(
-                        gameStage = gameStage,
-                        textModifier = Modifier,
-                        gridModifier = Modifier
-                            .padding(vertical = 40.dp).fillMaxWidth(),
-                        newcell = newcell,
-                        changePlayer= changePlayer,
-                        currentPlayer = currentPlayer,
-                        didSomeoneWon = didSomeoneWon,
-                        stage = stage,
-                        softReset = softReset,
-                        context = context,
-                        cellheight = 140.dp
-                    )
-                }
+        if (stage != Stage.STOPPED) {
+            Row(
+                Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Content(
+                    gameStage = gameStage,
+                    textModifier = Modifier
+                        .weight(0.55F),
+                    gridModifier = Modifier
+                        .weight(0.45F),
+                    newcell = board,
+                    onClick = { cell -> onClick(cell) },
+                    cellheight = if (orientation == Configuration.ORIENTATION_LANDSCAPE) 100.dp else 140.dp,
+                    orientation = orientation
+                )
             }
 
         } else {
-            Card(
-                backgroundColor = MaterialTheme.colors.primary,
-                modifier = Modifier
-                    .size(150.dp)
-                    .padding(4.dp)
-                    .fillMaxWidth()
-                    .clickable { startGame() },
-                elevation = 8.dp
-            ) {
+            Row(Modifier.weight(0.4F).padding(top = 25.dp, bottom = 25.dp)) {
                 Text(
-                    text = "Start Game", fontWeight = FontWeight.Bold,
-                    fontSize = 30.sp,
+                    text = "TIC TAC TOE",
+                    Modifier
+                        .background(MaterialTheme.colors.background)
+                        .fillMaxWidth().padding(top = 100.dp)
+                        .border(BorderStroke(5.dp, MaterialTheme.colors.primary)),
+                    color = MaterialTheme.colors.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 50.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
+
+                    )
+            }
+            Row(Modifier.weight(0.6F)) {
+                Card(
+                    backgroundColor = MaterialTheme.colors.primary,
+                    modifier = Modifier
+                        .size(150.dp)
+                        .padding(4.dp)
+                        .fillMaxWidth()
+                        .clickable { startGame() },
+                    elevation = 8.dp
+                ) {
+                    Text(
+                        text = "Start Game",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
     }
